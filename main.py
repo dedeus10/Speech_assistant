@@ -12,44 +12,40 @@ from creating_service import *
 
 r = sr.Recognizer() # initialise a recogniser
 # listen for audio and convert it to text:
-def record_audio(ask=False):
+def record_audio():
     
     with sr.Microphone() as source: # microphone as source
         #r.adjust_for_ambient_noise(source)
-        if ask:
-            speak(ask)
         audio = r.listen(source)  # listen for the audio via source
         voice_data = ''
         try:
-            print(ANA.name+': '+ANA.memory['Hello'])
-            speak(ANA.name+': '+ANA.memory['Hello'])
-            time.sleep(1)
-
+            print('---> ')
             voice_data = r.recognize_google(audio)  # convert audio to text
-            speak(voice_data)
+            ANA.speak(voice_data)
+            
+            ANA.search_service(voice_data.lower())
+            
         except sr.UnknownValueError: # error: recognizer does not understand
-            speak('I did not get that')
+            ANA.speak('I did not get that')
         except sr.RequestError:
-            speak('Sorry, the service is down') # error: recognizer is not connected
+            ANA.speak('Sorry, the service is down') # error: recognizer is not connected
         print(f">> {voice_data.lower()}") # print what user said
         return voice_data.lower()
 
-# get string and make a audio file to be played
-def speak(audio_string):
-    tts = gTTS(text=audio_string, lang='en') # text to speech(voice)
-    r = random.randint(1,20000000)
-    audio_file = 'audio' + str(r) + '.mp3'
-    tts.save(audio_file) # save as mp3
-    playsound.playsound(audio_file) # play the audio file
-    print(audio_string) # print what app said
-    os.remove(audio_file) # remove audio file
 
 if __name__ == "__main__":
     time.sleep(1)
-
-    ANA = create_assistant('Ana')
+    #Create weather service
+    w = weather_interface('Santa Maria', 'BR')
+    
+    #Create ANA assistant
+    ANA = create_assistant('Ana',w)
     ANA.setMemory('Hello','Hello, How can I help you ?')
     print("Ana was born")
+    
+
+    ANA.speak(ANA.name+': '+ANA.memory['Hello'])
+    time.sleep(1)
     while(1):
         voice_data = record_audio() # get the voice input
 
