@@ -8,6 +8,13 @@ import random
 from time import ctime # get time details
 import time
 from pyowm import OWM 
+from nltk.corpus import stopwords
+from gensim.models import Word2Vec
+import bs4 as bs
+import urllib.request
+import re
+import nltk
+
 
 class create_assistant:
     def __init__(self, name, w):
@@ -67,7 +74,57 @@ class create_assistant:
             self.speak(f'Wind of {wind} km/h')
             self.speak(f'Humidity of {hum} %')
             self.speak(f'Temperature of {temp} celsius')
+        
+        if("think" in voice_data):
+            search_term = voice_data.split("of")[-1]
+            suggestion = self.make_suggestion(search_term)
+            txt = 'I believe that the word you are looking for is ' + str(suggestion[0])
+            self.speak(txt)
+            sug = int(suggestion[1]*100)
+            txt = 'I am ' + str(sug) +' % sure that'
+            self.speak(txt)
 
+    def create_brain(self):
+        scrapped_data = urllib.request.urlopen('https://en.wikipedia.org/wiki/Artificial_intelligence')
+        article = scrapped_data .read()
+
+        parsed_article = bs.BeautifulSoup(article,'lxml')
+        paragraphs = parsed_article.find_all('p')
+
+        article_text = ""
+
+        for p in paragraphs:
+            article_text += p.text
+
+        # Cleaing the text
+        processed_article = article_text.lower()
+        processed_article = re.sub('[^a-zA-Z]', ' ', processed_article )
+        processed_article = re.sub(r'\s+', ' ', processed_article)
+
+        # Preparing the dataset
+        all_sentences = nltk.sent_tokenize(processed_article)
+
+        all_words = [nltk.word_tokenize(sent) for sent in all_sentences]
+
+        # Removing Stop Words
+        from nltk.corpus import stopwords
+        for i in range(len(all_words)):
+            all_words[i] = [w for w in all_words[i] if w not in stopwords.words('english')]
+
+        self.brain = Word2Vec(all_words, min_count=2)
+
+
+    def make_suggestion(self, word):
+        try:
+            print("ANA is thinking about ", word)
+            vocabulary = self.brain.wv.vocab
+            print(vocabulary.keys())
+            suggestions = self.brain.wv.most_similar('machine')
+            print(suggestions[0])
+            return suggestions[0]
+        except:
+            suggestions = ['None',0]
+            return suggestions
 
 class weather_interface():
     def __init__(self, cidade,pais):
@@ -79,7 +136,7 @@ class weather_interface():
  
     def get_weather(self):
  
-        owm = OWM('73b7cb8a41b103d02adb89fc55125da9')  # You MUST provide a valid API key
+        owm = OWM('Your-Key')  # You MUST provide a valid API key
         posicao = "%s,%s" % (self.cidade,self.pais)        # definimos o local aonde serão obtidos os dados
         mgr = owm.weather_manager()
         observation = mgr.weather_at_place(posicao)

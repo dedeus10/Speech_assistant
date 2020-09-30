@@ -37,13 +37,16 @@ if __name__ == "__main__":
     time.sleep(1)
     #Create weather service
     w = weather_interface('Santa Maria', 'BR')
-    
+
     #Create ANA assistant
+    # A: Artificial
+    # N: Natural
+    # A: Assistant
     ANA = create_assistant('Ana',w)
     ANA.setMemory('Hello','Hello, How can I help you ?')
-    print("Ana was born")
+    ANA.create_brain()
+    print("Ana was born!")
     
-
     ANA.speak(ANA.name+': '+ANA.memory['Hello'])
     time.sleep(1)
     while(1):
