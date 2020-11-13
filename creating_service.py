@@ -119,7 +119,8 @@ class create_assistant:
             print("ANA is thinking about ", word)
             vocabulary = self.brain.wv.vocab
             print(vocabulary.keys())
-            suggestions = self.brain.wv.most_similar('machine')
+            word = str(word)
+            suggestions = self.brain.wv.most_similar(str(word))
             print(suggestions[0])
             return suggestions[0]
         except:
@@ -136,7 +137,7 @@ class weather_interface():
  
     def get_weather(self):
  
-        owm = OWM('Your-Key')  # You MUST provide a valid API key
+        owm = OWM('73b7cb8a41b103d02adb89fc55125da9')  # You MUST provide a valid API key
         posicao = "%s,%s" % (self.cidade,self.pais)        # definimos o local aonde serão obtidos os dados
         mgr = owm.weather_manager()
         observation = mgr.weather_at_place(posicao)
